@@ -1,6 +1,7 @@
 import pygame
 import random
 import math
+from pygame import mixer
 
 # inicializa pygame
 pygame.init()
@@ -13,6 +14,11 @@ pygame.display.set_caption("Invasión Espacial")
 icono = pygame.image.load("ovni.png")
 pygame.display.set_icon(icono)
 fondo = pygame.image.load("fondo.jpg")
+
+#agregar musica
+mixer.music.load("MusicaFondo.mp3")
+mixer.music.set_volume(0.3)
+mixer.music.play(-1)
 
 # variables del Jugador
 img_jugador = pygame.image.load("rocket.png")
@@ -40,7 +46,7 @@ img_bala = pygame.image.load("bala.png")
 bala_x = 0
 bala_y = 500
 bala_x_cambio = 0
-bala_y_cambio = 0.3
+bala_y_cambio = 1
 bala_visible = False
 
 #puntaje
@@ -48,6 +54,13 @@ puntaje=0
 fuente=pygame.font.Font("Invaders.ttf",32)
 texto_x=10
 texto_y=10
+
+#texto final del juego
+fuente_final=pygame.font.Font("Invaders.ttf",100)
+
+def texto_final():
+    mi_fuente_final=fuente_final.render("GAME OVER MDFK!!!!", True, (255,255,255))
+    pantalla.blit(mi_fuente_final,(60,200))
 
 #funcion mostrar puntaje
 def mostrar_puntaje(x,y):
@@ -102,6 +115,8 @@ while se_ejecuta:
             if evento.key == pygame.K_RIGHT:
                 jugador_x_cambio = +0.3
             if evento.key == pygame.K_SPACE:
+                sonido_bala=mixer.Sound("disparo.mp3")
+                sonido_bala.play()
                 if not bala_visible:
                     bala_x = jugador_x
                     disparar_bala(bala_x, jugador_y)
@@ -124,6 +139,13 @@ while se_ejecuta:
     for e in range(cantidad_de_enemigos):
         enemigo_x[e] += enemigo_x_cambio[e]
 
+        #fin del juego
+        if enemigo_y[e]>500:
+            for k in range(cantidad_de_enemigos):
+                enemigo_y[k]=1000
+            texto_final()
+            break
+
         # mantener entre los bordes al enemigo
         if enemigo_x[e] <= 0:
             enemigo_x_cambio[e] = 0.2
@@ -135,6 +157,9 @@ while se_ejecuta:
         # colision
         colision = hay_colision(enemigo_x[e], enemigo_y[e], bala_x, bala_y)
         if colision:
+            sonido_colision=mixer.Sound("explode.mp3")
+            sonido_colision.play()
+
             bala_y = 500
             bala_visible = False
             puntaje += 1
